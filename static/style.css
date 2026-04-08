@@ -1181,6 +1181,11 @@ body.page-check {
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
     .menu-toggle { display: block; }
+    .logo { font-size: .72rem; gap: .3rem; white-space: nowrap; }
+    .logo .logo-img { width: 22px; height: 22px; }
+    .header-inner { padding: .65rem .75rem; }
+    .header-user { font-size: .68rem; padding: .2rem .5rem; white-space: nowrap; }
+    .header-action { width: 28px; height: 28px; }
     .nav { display: none; flex-direction: column; }
     .nav.open { display: flex; }
     .nav a { padding: .75rem 1rem; border-bottom: none; border-left: 3px solid transparent; }
