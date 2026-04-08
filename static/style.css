@@ -787,10 +787,10 @@ body.page-check {
 .badge {
     display: inline-flex;
     align-items: center;
-    gap: .2rem;
-    padding: .15rem .55rem;
-    border-radius: 6px;
-    font-size: .7rem;
+    gap: .15rem;
+    padding: .1rem .4rem;
+    border-radius: 5px;
+    font-size: .65rem;
     font-weight: 600;
     letter-spacing: .02em;
 }
@@ -1040,6 +1040,20 @@ body.page-check {
 .check-item-row:hover { background: var(--yellow-bg); }
 .check-item-row:last-child { border-bottom: none; }
 .check-item-info { flex: 1; min-width: 0; }
+/* Check category header */
+.check-cat-header {
+    background: var(--yellow-light);
+    padding: .35rem .75rem;
+    font-weight: 700;
+    font-size: .72rem;
+    color: #b8860b;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+.check-cat-header svg { width: 12px; height: 12px; flex-shrink: 0; }
+
 .check-item-name { font-weight: 700; font-size: .88rem; color: var(--gray-800); }
 .formal-name { font-weight: 500; font-size: .76rem; color: var(--gray-400); margin-left: .3rem; }
 .check-item-meta { font-size: .74rem; color: var(--gray-500); margin-top: .15rem; }
@@ -1199,4 +1213,27 @@ body.page-check {
     .announce-bar { font-size: .76rem; }
     .announce-bar .announce-btn { padding: .25rem .6rem; font-size: .7rem; }
     .container { padding: .85rem; }
+
+    /* Tables: card layout on mobile */
+    .table-wrap { overflow-x: visible; }
+    .table thead { display: none; }
+    .table, .table tbody, .table tr, .table td { display: block; width: 100%; }
+    .table tr { padding: .6rem .75rem; border-bottom: 1px solid var(--gray-100); position: relative; }
+    .table td { padding: .1rem 0; border-top: none; font-size: .82rem; }
+    .table td:empty { display: none; }
+    .table td.text-center { text-align: left; }
+
+    /* Check page mobile */
+    .check-item-row { padding: .6rem .75rem; gap: .5rem; }
+    .check-item-name { font-size: .82rem; }
+    .check-item-meta { font-size: .7rem; }
+    .check-item-input input[type="number"] { width: 65px; font-size: .9rem; padding: .4rem .35rem; }
+    .formal-name { display: block; margin-left: 0; font-size: .7rem; }
+    .item-thumb { width: 32px; height: 32px; }
+
+    /* Dashboard items mobile */
+    .dash-item-row { padding: .55rem .75rem; gap: .5rem; }
+    .dash-item-name { font-size: .82rem; }
+    .dash-item-qty { font-size: 1rem; }
+    .dash-item-par { font-size: .7rem; }
 }
