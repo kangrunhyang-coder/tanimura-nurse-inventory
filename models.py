@@ -1,6 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from flask_sqlalchemy import SQLAlchemy
+
+JST = timezone(timedelta(hours=9))
+
+
+def now_jst():
+    return datetime.now(JST).replace(tzinfo=None)
 
 db = SQLAlchemy()
 
@@ -19,7 +25,7 @@ class Staff(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     sort_order = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=now_jst)
 
 
 class BoardMessage(db.Model):
@@ -28,7 +34,7 @@ class BoardMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     author = db.Column(db.String(100), nullable=False)
     body = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=now_jst)
 
 
 class Area(db.Model):
@@ -52,7 +58,7 @@ class Item(db.Model):
     image_path = db.Column(db.String(300), default="")
     supplier = db.Column(db.String(200), default="")  # 発注先
     sort_order = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=now_jst)
 
     stock = db.relationship("Stock", backref="item", uselist=False, cascade="all, delete-orphan")
     records = db.relationship("StockRecord", backref="item", cascade="all, delete-orphan", order_by="StockRecord.created_at.desc()")
@@ -87,7 +93,7 @@ class Stock(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey("items.id"), nullable=False, unique=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=now_jst, onupdate=now_jst)
 
 
 class StockRecord(db.Model):
@@ -99,7 +105,7 @@ class StockRecord(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     operator = db.Column(db.String(100), default="")
     note = db.Column(db.String(300), default="")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=now_jst)
 
 
 class InventoryCheck(db.Model):
@@ -108,7 +114,7 @@ class InventoryCheck(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     area = db.Column(db.String(100), nullable=False)
     checker_name = db.Column(db.String(100), nullable=False)
-    checked_at = db.Column(db.DateTime, default=datetime.utcnow)
+    checked_at = db.Column(db.DateTime, default=now_jst)
     note = db.Column(db.String(300), default="")
 
     check_items = db.relationship("InventoryCheckItem", backref="check", cascade="all, delete-orphan", order_by="InventoryCheckItem.id")
@@ -135,6 +141,6 @@ class Order(db.Model):
     quantity = db.Column(db.Integer, nullable=False, default=1)
     status = db.Column(db.String(20), nullable=False, default="pending")  # pending / ordered / received
     note = db.Column(db.String(300), default="")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=now_jst)
     ordered_at = db.Column(db.DateTime, nullable=True)
     received_at = db.Column(db.DateTime, nullable=True)

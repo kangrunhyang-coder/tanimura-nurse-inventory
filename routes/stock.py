@@ -1,4 +1,4 @@
-from datetime import datetime
+from models import now_jst
 
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
@@ -48,7 +48,7 @@ def stock_in():
             stock = Stock(item_id=item_id, quantity=0)
             db.session.add(stock)
         stock.quantity += quantity
-        stock.updated_at = datetime.utcnow()
+        stock.updated_at = now_jst()
 
         operator = session.get("staff_name", "")
         record = StockRecord(item_id=item_id, record_type="in", quantity=quantity, operator=operator, note=note)
@@ -72,7 +72,7 @@ def stock_out():
             stock = Stock(item_id=item_id, quantity=0)
             db.session.add(stock)
         stock.quantity = max(0, stock.quantity - quantity)
-        stock.updated_at = datetime.utcnow()
+        stock.updated_at = now_jst()
 
         operator = session.get("staff_name", "")
         record = StockRecord(item_id=item_id, record_type="out", quantity=quantity, operator=operator, note=note)
@@ -97,7 +97,7 @@ def stock_set():
 
     old_qty = stock.quantity
     stock.quantity = max(0, quantity)
-    stock.updated_at = datetime.utcnow()
+    stock.updated_at = now_jst()
 
     diff = quantity - old_qty
     if diff != 0:

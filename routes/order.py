@@ -1,4 +1,4 @@
-from datetime import datetime
+from models import now_jst
 
 from flask import Blueprint, redirect, render_template, request, url_for
 
@@ -72,10 +72,10 @@ def order_update_status(order_id):
 
     if new_status == "ordered":
         order.status = "ordered"
-        order.ordered_at = datetime.utcnow()
+        order.ordered_at = now_jst()
     elif new_status == "received":
         order.status = "received"
-        order.received_at = datetime.utcnow()
+        order.received_at = now_jst()
 
         # Auto stock-in on receive
         auto_in = request.form.get("auto_stock_in")
@@ -85,7 +85,7 @@ def order_update_status(order_id):
                 stock = Stock(item_id=order.item_id, quantity=0)
                 db.session.add(stock)
             stock.quantity += order.quantity
-            stock.updated_at = datetime.utcnow()
+            stock.updated_at = now_jst()
 
             record = StockRecord(
                 item_id=order.item_id,

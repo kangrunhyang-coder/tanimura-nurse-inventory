@@ -1,4 +1,4 @@
-from datetime import datetime
+from models import now_jst
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
@@ -17,7 +17,7 @@ def check_top():
     no_area_count = Item.query.filter((Item.area == "") | (Item.area.is_(None))).count()
 
     # Next check date info
-    today = datetime.utcnow()
+    today = now_jst()
     day = today.day
     if day <= 5:
         next_check = 5
@@ -110,7 +110,7 @@ def check_save(area_name):
 
         if diff != 0:
             stock.quantity = max(0, actual_qty)
-            stock.updated_at = datetime.utcnow()
+            stock.updated_at = now_jst()
             record = StockRecord(
                 item_id=item_id,
                 record_type="in" if diff > 0 else "out",
