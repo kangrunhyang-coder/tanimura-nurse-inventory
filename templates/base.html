@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}在庫管理{% endblock %} - tanimuraナースで在庫管理</title>
+    <title>{% block title %}在庫管理{% endblock %} - たにむら在庫管理</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -11,7 +11,7 @@
         <div class="header-inner">
             <a href="{{ url_for('main.index') }}" class="logo">
                 <img src="{{ url_for('static', filename='images/logo.png') }}" alt="" class="logo-img">
-                tanimuraナースで在庫管理
+                たにむら在庫管理
             </a>
             <div style="display:flex; align-items:center; gap:.5rem;">
                 {% if session.get('staff_name') %}
