@@ -1,0 +1,10 @@
+__pycache__/
+instance/
+*.pyc
+.DS_Store
+static/images/*.png
+static/images/*.jpg
+static/images/*.jpeg
+static/images/*.gif
+static/images/*.webp
+!static/images/logo.png

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}エリア管理{% endblock %}
+{% block body_class %}page-items{% endblock %}
+
+{% block content %}
+<h1 class="page-title">
+    <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    エリア管理
+</h1>
+
+<!-- Add new area -->
+<div class="panel" style="max-width:500px; margin-bottom:1.5rem;">
+    <h2 class="panel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        新しいエリアを追加
+    </h2>
+    <form method="post" action="{{ url_for('inventory.area_add') }}" style="display:flex; gap:.5rem; align-items:flex-end;">
+        <div class="form-group" style="flex:1; margin-bottom:0;">
+            <label>エリア名</label>
+            <input type="text" name="name" placeholder="例: 3F倉庫" required>
+        </div>
+        <button type="submit" class="btn btn-accent" style="height:fit-content;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            追加
+        </button>
+    </form>
+</div>
+
+<!-- Area list -->
+{% if areas %}
+<div class="table-wrap" style="max-width:600px;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>エリア名</th>
+                <th>アイテム数</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for area in areas %}
+            {% set item_count = area.name %}
+            <tr>
+                <td>
+                    <form method="post" action="{{ url_for('inventory.area_edit', area_id=area.id) }}" style="display:flex; gap:.35rem; align-items:center;" id="edit-form-{{ area.id }}">
+                        <input type="text" name="name" value="{{ area.name }}" style="padding:.3rem .5rem; border:1px solid var(--gray-300); border-radius:var(--radius); font-size:.85rem; width:160px;">
+                        <button type="submit" class="btn btn-sm btn-secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            保存
+                        </button>
+                    </form>
+                </td>
+                <td class="text-center">
+                    {{ area.name | count_items }}
+                </td>
+                <td>
+                    <form method="post" action="{{ url_for('inventory.area_delete', area_id=area.id) }}" style="display:inline" onsubmit="return confirm('エリア「{{ area.name }}」を削除しますか？所属アイテムのエリアはクリアされます。')">
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            削除
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state" style="max-width:500px;">
+    <p>エリアが登録されていません。上のフォームから追加してください。</p>
+</div>
+{% endif %}
+
+<div style="margin-top:1rem;">
+    <a href="{{ url_for('inventory.item_manage') }}" class="btn btn-secondary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        アイテム管理に戻る
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}発注管理{% endblock %}
+{% block body_class %}page-order{% endblock %}
+
+{% block content %}
+<h1 class="page-title">
+    <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    発注管理
+</h1>
+
+{% if order_needed_items %}
+<section class="section">
+    <h2 class="section-title">
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        要発注アイテム（未登録）
+    </h2>
+    <form method="post" action="{{ url_for('order.order_bulk_create') }}">
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" onclick="toggleAll(this)"></th>
+                        <th>カテゴリ</th>
+                        <th>アイテム名</th>
+                        <th>現在数</th>
+                        <th>定数</th>
+                        <th>発注先</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order_needed_items %}
+                    <tr>
+                        <td><input type="checkbox" name="item_ids" value="{{ item.id }}"></td>
+                        <td><span class="badge badge-category">{{ item.category }}</span></td>
+                        <td>{{ item.name }}</td>
+                        <td class="text-center text-danger"><strong>{{ item.quantity }}</strong></td>
+                        <td class="text-center">{{ item.par_level }}</td>
+                        <td>{{ item.supplier }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn btn-danger" style="margin-top:.75rem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            選択アイテムの発注を作成
+        </button>
+    </form>
+</section>
+{% endif %}
+
+<div class="tab-bar">
+    <a href="?tab=pending" class="tab {% if tab == 'pending' %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        未発注 <span class="tab-count">{{ pending_orders|length }}</span>
+    </a>
+    <a href="?tab=ordered" class="tab {% if tab == 'ordered' %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        発注済み <span class="tab-count">{{ ordered_orders|length }}</span>
+    </a>
+    <a href="?tab=received" class="tab {% if tab == 'received' %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        入荷済み <span class="tab-count">{{ received_orders|length }}</span>
+    </a>
+</div>
+
+{% if tab == 'pending' %}
+<section class="section">
+    {% if pending_orders %}
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>カテゴリ</th>
+                    <th>アイテム名</th>
+                    <th>数量</th>
+                    <th>発注先</th>
+                    <th>メモ</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in pending_orders %}
+                <tr>
+                    <td><span class="badge badge-category">{{ order.item.category }}</span></td>
+                    <td>{{ order.item.name }}</td>
+                    <td class="text-center">{{ order.quantity }}</td>
+                    <td>{{ order.item.supplier }}</td>
+                    <td>{{ order.note }}</td>
+                    <td class="action-cell">
+                        <form method="post" action="{{ url_for('order.order_update_status', order_id=order.id) }}" style="display:inline">
+                            <input type="hidden" name="status" value="ordered">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                発注済み
+                            </button>
+                        </form>
+                        <form method="post" action="{{ url_for('order.order_delete', order_id=order.id) }}" style="display:inline" onsubmit="return confirm('削除しますか？')">
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                削除
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>未発注の注文はありません。</p></div>
+    {% endif %}
+</section>
+{% endif %}
+
+{% if tab == 'ordered' %}
+<section class="section">
+    {% if ordered_orders %}
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>カテゴリ</th>
+                    <th>アイテム名</th>
+                    <th>数量</th>
+                    <th>発注日</th>
+                    <th>発注先</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in ordered_orders %}
+                <tr>
+                    <td><span class="badge badge-category">{{ order.item.category }}</span></td>
+                    <td>{{ order.item.name }}</td>
+                    <td class="text-center">{{ order.quantity }}</td>
+                    <td class="nowrap">{{ order.ordered_at.strftime('%m/%d %H:%M') if order.ordered_at else '-' }}</td>
+                    <td>{{ order.item.supplier }}</td>
+                    <td class="action-cell">
+                        <form method="post" action="{{ url_for('order.order_update_status', order_id=order.id) }}" style="display:inline">
+                            <input type="hidden" name="status" value="received">
+                            <input type="hidden" name="auto_stock_in" value="1">
+                            <button type="submit" class="btn btn-sm btn-success">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                                入荷
+                            </button>
+                        </form>
+                        <form method="post" action="{{ url_for('order.order_update_status', order_id=order.id) }}" style="display:inline">
+                            <input type="hidden" name="status" value="pending">
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                戻す
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>発注済みの注文はありません。</p></div>
+    {% endif %}
+</section>
+{% endif %}
+
+{% if tab == 'received' %}
+<section class="section">
+    {% if received_orders %}
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>カテゴリ</th>
+                    <th>アイテム名</th>
+                    <th>数量</th>
+                    <th>入荷日</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in received_orders %}
+                <tr>
+                    <td><span class="badge badge-category">{{ order.item.category }}</span></td>
+                    <td>{{ order.item.name }}</td>
+                    <td class="text-center">{{ order.quantity }}</td>
+                    <td class="nowrap">{{ order.received_at.strftime('%m/%d %H:%M') if order.received_at else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>入荷済みの注文はありません。</p></div>
+    {% endif %}
+</section>
+{% endif %}
+
+<section class="section">
+    <h2 class="section-title">
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        手動で発注を追加
+    </h2>
+    <form method="post" action="{{ url_for('order.order_create') }}" class="panel">
+        <div class="form-group">
+            <label>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                アイテム
+            </label>
+            <select name="item_id" required>
+                <option value="">選択してください</option>
+                {% for item in order_needed_items %}
+                <option value="{{ item.id }}">【{{ item.category }}】{{ item.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>数量</label>
+                <input type="number" name="quantity" min="1" value="1" required>
+            </div>
+            <div class="form-group">
+                <label>メモ</label>
+                <input type="text" name="note" placeholder="任意">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-accent">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            発注追加
+        </button>
+    </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleAll(source) {
+    const checkboxes = document.querySelectorAll('input[name="item_ids"]');
+    checkboxes.forEach(cb => cb.checked = source.checked);
+}
+</script>
+{% endblock %}

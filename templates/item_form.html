@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}{{ 'アイテム編集' if item else '新規アイテム' }}{% endblock %}
+{% block body_class %}page-items{% endblock %}
+
+{% block content %}
+<h1 class="page-title">
+    {% if item %}
+    <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    アイテム編集
+    {% else %}
+    <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    新規アイテム追加
+    {% endif %}
+</h1>
+
+<form method="post" enctype="multipart/form-data" class="panel form-panel">
+    <div class="form-group">
+        <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
+            アイテム名 <span class="required">*</span>
+        </label>
+        <input type="text" name="name" value="{{ item.name if item else '' }}" required>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            正式名称
+        </label>
+        <input type="text" name="formal_name" value="{{ item.formal_name if item else '' }}" placeholder="製品の正式名称（任意）">
+    </div>
+
+    <div class="form-group">
+        <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            カテゴリ <span class="required">*</span>
+        </label>
+        <input type="text" name="category" value="{{ item.category if item else '' }}" list="category-list" required>
+        <datalist id="category-list">
+            {% for cat in categories %}
+            <option value="{{ cat }}">
+            {% endfor %}
+        </datalist>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                定数（パーレベル）
+            </label>
+            <input type="number" name="par_level" min="0" value="{{ item.par_level if item else 0 }}">
+        </div>
+        <div class="form-group">
+            <label>単位</label>
+            <input type="text" name="unit" value="{{ item.unit if item else '個' }}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            エリア
+        </label>
+        <select name="area">
+            <option value="">-- 選択してください --</option>
+            {% for a in areas %}
+            <option value="{{ a.name }}" {% if item and item.area == a.name %}selected{% endif %}>{{ a.name }}</option>
+            {% endfor %}
+        </select>
+        <div style="margin-top:.35rem; font-size:.75rem; color:var(--gray-500);">
+            <a href="{{ url_for('inventory.area_list') }}">エリアの追加・管理はこちら</a>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            発注先
+        </label>
+        <input type="text" name="supplier" value="{{ item.supplier if item else '' }}">
+    </div>
+
+    <div class="form-group">
+        <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            画像
+        </label>
+        {% if item and item.image_path %}
+        <div class="current-image" style="display:flex; align-items:flex-end; gap:.5rem; margin-bottom:.5rem;">
+            <img src="{{ url_for('static', filename=item.image_path) }}" alt="" class="preview-img">
+            <button type="button" class="btn btn-sm btn-danger" onclick="deleteImage()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                画像を削除
+            </button>
+        </div>
+        {% endif %}
+        <input type="file" name="image" accept="image/*">
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-accent">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            {{ '更新' if item else '登録' }}
+        </button>
+        <a href="{{ url_for('inventory.item_manage') }}" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            キャンセル
+        </a>
+    </div>
+</form>
+
+{% if item and item.image_path %}
+<form id="delete-image-form" method="post" action="{{ url_for('inventory.item_delete_image', item_id=item.id) }}"></form>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if item and item.image_path %}
+<script>
+function deleteImage() {
+    if (confirm('画像を削除しますか？')) {
+        document.getElementById('delete-image-form').submit();
+    }
+}
+</script>
+{% endif %}
+{% endblock %}

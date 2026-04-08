@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}チェック結果 - {{ check.area }}{% endblock %}
+{% block body_class %}page-check{% endblock %}
+
+{% block content %}
+<h1 class="page-title">
+    <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    チェック結果
+</h1>
+
+<div class="panel" style="margin-bottom:1.5rem;">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:1rem;">
+        <div>
+            <div style="font-size:.75rem; color:var(--gray-500); margin-bottom:.15rem;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;vertical-align:middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                日時
+            </div>
+            <div style="font-weight:600;">{{ check.checked_at.strftime('%Y年%m月%d日 %H:%M') }}</div>
+        </div>
+        <div>
+            <div style="font-size:.75rem; color:var(--gray-500); margin-bottom:.15rem;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;vertical-align:middle;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                エリア
+            </div>
+            <div style="font-weight:600;">{{ check.area }}</div>
+        </div>
+        <div>
+            <div style="font-size:.75rem; color:var(--gray-500); margin-bottom:.15rem;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;vertical-align:middle;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                チェック者
+            </div>
+            <div style="font-weight:600;">{{ check.checker_name }}</div>
+        </div>
+        <div>
+            <div style="font-size:.75rem; color:var(--gray-500); margin-bottom:.15rem;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;vertical-align:middle;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                アイテム数
+            </div>
+            <div style="font-weight:600;">{{ check.check_items|length }} 件</div>
+        </div>
+    </div>
+    {% if check.note %}
+    <div style="margin-top:.75rem; padding-top:.75rem; border-top:1px solid var(--gray-200); font-size:.85rem; color:var(--gray-700);">
+        <strong>メモ:</strong> {{ check.note }}
+    </div>
+    {% endif %}
+</div>
+
+<div class="table-wrap">
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+                <th>カテゴリ</th>
+                <th>アイテム名</th>
+                <th>システム在庫</th>
+                <th>実数</th>
+                <th>差異</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ci in check.check_items %}
+            <tr>
+                <td>{% if ci.item.image_path %}<span class="item-thumb-link" onclick="openImgModal('{{ url_for('static', filename=ci.item.image_path) }}')"><img src="{{ url_for('static', filename=ci.item.image_path) }}" alt="" class="item-thumb"></span>{% endif %}</td>
+                <td><span class="badge badge-category">{{ ci.item.category }}</span></td>
+                <td>{{ ci.item.name }}</td>
+                <td class="text-center">{{ ci.system_quantity }}</td>
+                <td class="text-center"><strong>{{ ci.actual_quantity }}</strong></td>
+                <td class="text-center">
+                    {% if ci.difference > 0 %}
+                    <span class="diff-plus">+{{ ci.difference }}</span>
+                    {% elif ci.difference < 0 %}
+                    <span class="diff-minus">{{ ci.difference }}</span>
+                    {% else %}
+                    <span class="diff-zero">0</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div style="margin-top:1rem; display:flex; gap:.5rem;">
+    <a href="{{ url_for('check.check_top') }}" class="btn btn-accent">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        チェックトップへ
+    </a>
+    <a href="{{ url_for('check.check_history') }}" class="btn btn-secondary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        履歴一覧
+    </a>
+</div>
+{% endblock %}

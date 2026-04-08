@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block title %}入出庫管理{% endblock %}
+{% block body_class %}page-stock{% endblock %}
+
+{% block content %}
+<h1 class="page-title">
+    <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+    入出庫管理
+</h1>
+
+<!-- Alert: Items needing attention -->
+{% if order_needed or low_items %}
+<section class="section">
+    <h2 class="section-title">
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        要発注・在庫少アイテム
+    </h2>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>ステータス</th>
+                    <th>カテゴリ</th>
+                    <th>アイテム名</th>
+                    <th>現在数</th>
+                    <th>定数</th>
+                    <th>発注先</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order_needed %}
+                <tr class="row-order">
+                    <td>{% if item.image_path %}<span class="item-thumb-link" onclick="openImgModal('{{ url_for('static', filename=item.image_path) }}')"><img src="{{ url_for('static', filename=item.image_path) }}" alt="" class="item-thumb"></span>{% endif %}</td>
+                    <td>
+                        <span class="status status-order">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            発注必要
+                        </span>
+                    </td>
+                    <td><span class="badge badge-category">{{ item.category }}</span></td>
+                    <td>{{ item.name }}</td>
+                    <td class="text-center"><strong class="text-danger">{{ item.quantity }}</strong></td>
+                    <td class="text-center">{{ item.par_level }}</td>
+                    <td>{{ item.supplier }}</td>
+                </tr>
+                {% endfor %}
+                {% for item in low_items %}
+                <tr class="row-low">
+                    <td>{% if item.image_path %}<span class="item-thumb-link" onclick="openImgModal('{{ url_for('static', filename=item.image_path) }}')"><img src="{{ url_for('static', filename=item.image_path) }}" alt="" class="item-thumb"></span>{% endif %}</td>
+                    <td>
+                        <span class="status status-low">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            少ない
+                        </span>
+                    </td>
+                    <td><span class="badge badge-category">{{ item.category }}</span></td>
+                    <td>{{ item.name }}</td>
+                    <td class="text-center"><strong class="text-warning">{{ item.quantity }}</strong></td>
+                    <td class="text-center">{{ item.par_level }}</td>
+                    <td>{{ item.supplier }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+<!-- Stock In / Out / Set -->
+<div class="action-panels">
+    <div class="panel">
+        <h2 class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+            入庫登録
+        </h2>
+        <form method="post" action="{{ url_for('stock.stock_in') }}">
+            <div class="form-group">
+                <label>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    アイテム
+                </label>
+                <select name="item_id" required>
+                    <option value="">選択してください</option>
+                    {% for item in items %}
+                    <option value="{{ item.id }}">【{{ item.category }}】{{ item.name }}（現在: {{ item.quantity }}）</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>数量</label>
+                    <input type="number" name="quantity" min="1" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label>メモ</label>
+                    <input type="text" name="note" placeholder="任意">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                入庫
+            </button>
+        </form>
+    </div>
+
+    <div class="panel">
+        <h2 class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            出庫登録
+        </h2>
+        <form method="post" action="{{ url_for('stock.stock_out') }}">
+            <div class="form-group">
+                <label>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    アイテム
+                </label>
+                <select name="item_id" required>
+                    <option value="">選択してください</option>
+                    {% for item in items %}
+                    <option value="{{ item.id }}">【{{ item.category }}】{{ item.name }}（現在: {{ item.quantity }}）</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>数量</label>
+                    <input type="number" name="quantity" min="1" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label>メモ</label>
+                    <input type="text" name="note" placeholder="任意">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-danger">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                出庫
+            </button>
+        </form>
+    </div>
+
+    <div class="panel">
+        <h2 class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            数量直接設定（棚卸し）
+        </h2>
+        <form method="post" action="{{ url_for('stock.stock_set') }}">
+            <div class="form-group">
+                <label>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    アイテム
+                </label>
+                <select name="item_id" required>
+                    <option value="">選択してください</option>
+                    {% for item in items %}
+                    <option value="{{ item.id }}">【{{ item.category }}】{{ item.name }}（現在: {{ item.quantity }}）</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>新しい数量</label>
+                    <input type="number" name="quantity" min="0" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label>メモ</label>
+                    <input type="text" name="note" value="棚卸し">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-accent">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                設定
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- History -->
+<section class="section">
+    <h2 class="section-title">
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        入出庫履歴（直近50件）
+    </h2>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>日時</th>
+                    <th>種別</th>
+                    <th>担当者</th>
+                    <th>カテゴリ</th>
+                    <th>アイテム</th>
+                    <th>数量</th>
+                    <th>メモ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records %}
+                <tr>
+                    <td class="nowrap">{{ r.created_at.strftime('%m/%d %H:%M') }}</td>
+                    <td>
+                        {% if r.record_type == 'in' %}
+                        <span class="badge badge-in">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="10" height="10" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                            入庫
+                        </span>
+                        {% else %}
+                        <span class="badge badge-out">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="10" height="10" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                            出庫
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>{{ r.operator }}</td>
+                    <td>{{ r.item.category }}</td>
+                    <td>{{ r.item.name }}</td>
+                    <td class="text-center">{{ r.quantity }}</td>
+                    <td>{{ r.note }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if not records %}
+    <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <p>履歴がありません。</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
