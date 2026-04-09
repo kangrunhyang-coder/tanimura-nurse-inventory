@@ -1,8 +1,6 @@
-from models import now_jst
-
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
-from models import Item, Stock, StockRecord, db
+from models import Item, Stock, StockRecord, db, now_jst
 
 stock_bp = Blueprint("stock", __name__)
 

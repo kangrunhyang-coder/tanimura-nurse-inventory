@@ -1,8 +1,6 @@
-from models import now_jst
-
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
-from models import Area, InventoryCheck, InventoryCheckItem, Item, Stock, StockRecord, db
+from models import Area, InventoryCheck, InventoryCheckItem, Item, Stock, StockRecord, db, now_jst
 
 check_bp = Blueprint("check", __name__)
 
