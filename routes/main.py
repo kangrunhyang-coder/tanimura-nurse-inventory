@@ -5,6 +5,11 @@ from models import BoardMessage, Item, Staff, db
 main_bp = Blueprint("main", __name__)
 
 
+@main_bp.route("/health")
+def health():
+    return "ok", 200
+
+
 @main_bp.route("/")
 def index():
     items = Item.query.all()

@@ -34,7 +34,7 @@ def create_app():
     # Login check for all pages except login/setup/static
     @app.before_request
     def require_login():
-        allowed = {"auth.login", "auth.setup", "auth.logout", "static"}
+        allowed = {"auth.login", "auth.setup", "auth.logout", "main.health", "static"}
         if not session.get("logged_in") and request.endpoint not in allowed:
             return redirect(url_for("auth.login"))
 
