@@ -38,6 +38,15 @@ def create_app():
         if not session.get("logged_in") and request.endpoint not in allowed:
             return redirect(url_for("auth.login"))
 
+    @app.after_request
+    def no_cache(response):
+        # Prevent browser caching of HTML pages so flash messages don't persist
+        if response.mimetype == "text/html":
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
     # Template filter for area item count
     @app.template_filter("count_items")
     def count_items_filter(area_name):
