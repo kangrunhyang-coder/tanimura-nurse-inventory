@@ -52,8 +52,8 @@
             <tr class="row-{{ item.status }}">
                 <td><span class="badge badge-category">{{ item.category }}</span></td>
                 <td>
-                    {% if item.image_path %}
-                    <span class="item-thumb-link" onclick="openImgModal('{{ url_for('static', filename=item.image_path) }}')"><img src="{{ url_for('static', filename=item.image_path) }}" alt="" class="item-thumb"></span>
+                    {% if item_img_url(item) %}
+                    <span class="item-thumb-link" onclick="openImgModal('{{ item_img_url(item) }}')"><img src="{{ item_img_url(item) }}" alt="" class="item-thumb"></span>
                     {% endif %}
                     {{ item.name }}
                 </td>

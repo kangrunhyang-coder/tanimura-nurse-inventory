@@ -1,18 +1,26 @@
-import os
-import uuid
+import base64
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
-from werkzeug.utils import secure_filename
+from flask import Blueprint, Response, flash, redirect, render_template, request, url_for
 
 from models import Area, Item, Stock, db
 
 inventory_bp = Blueprint("inventory", __name__)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+MIME_MAP = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg", "gif": "image/gif", "webp": "image/webp"}
 
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def _save_image_to_db(item, file):
+    """Read uploaded file and store as base64 in DB."""
+    if file and file.filename and allowed_file(file.filename):
+        ext = file.filename.rsplit(".", 1)[1].lower()
+        data = base64.b64encode(file.read()).decode("utf-8")
+        item.image_data = f"data:{MIME_MAP.get(ext, 'image/png')};base64,{data}"
+        item.image_path = f"db:{ext}"  # marker to indicate DB storage
 
 
 def _get_areas():
@@ -22,6 +30,21 @@ def _get_areas():
 def _get_categories():
     rows = db.session.query(Item.category).distinct().order_by(Item.category).all()
     return [c[0] for c in rows]
+
+
+@inventory_bp.route("/item-image/<int:item_id>")
+def item_image(item_id):
+    """Serve image from DB."""
+    item = Item.query.get_or_404(item_id)
+    if not item.image_data:
+        return "", 404
+    # image_data is "data:image/png;base64,..."
+    parts = item.image_data.split(",", 1)
+    if len(parts) != 2:
+        return "", 404
+    mime = parts[0].split(":")[1].split(";")[0] if ":" in parts[0] else "image/png"
+    raw = base64.b64decode(parts[1])
+    return Response(raw, mimetype=mime, headers={"Cache-Control": "public, max-age=86400"})
 
 
 @inventory_bp.route("/inventory")
@@ -78,15 +101,6 @@ def item_add():
         area = request.form.get("area", "").strip()
         supplier = request.form.get("supplier", "").strip()
 
-        image_path = ""
-        file = request.files.get("image")
-        if file and file.filename and allowed_file(file.filename):
-            ext = file.filename.rsplit(".", 1)[1].lower()
-            filename = f"{uuid.uuid4().hex}.{ext}"
-            filepath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
-            file.save(filepath)
-            image_path = f"images/{filename}"
-
         item = Item(
             name=name,
             formal_name=formal_name,
@@ -95,8 +109,11 @@ def item_add():
             unit=unit,
             area=area,
             supplier=supplier,
-            image_path=image_path,
         )
+
+        file = request.files.get("image")
+        _save_image_to_db(item, file)
+
         db.session.add(item)
         db.session.flush()
 
@@ -129,16 +146,7 @@ def item_edit(item_id):
         item.supplier = request.form.get("supplier", "").strip()
 
         file = request.files.get("image")
-        if file and file.filename and allowed_file(file.filename):
-            if item.image_path:
-                old_path = os.path.join(current_app.config["UPLOAD_FOLDER"], os.path.basename(item.image_path))
-                if os.path.exists(old_path):
-                    os.remove(old_path)
-            ext = file.filename.rsplit(".", 1)[1].lower()
-            filename = f"{uuid.uuid4().hex}.{ext}"
-            filepath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
-            file.save(filepath)
-            item.image_path = f"images/{filename}"
+        _save_image_to_db(item, file)
 
         db.session.commit()
         flash(f"「{item.name}」を更新しました！", "success")
@@ -155,23 +163,16 @@ def item_edit(item_id):
 @inventory_bp.route("/items/<int:item_id>/delete-image", methods=["POST"])
 def item_delete_image(item_id):
     item = Item.query.get_or_404(item_id)
-    if item.image_path:
-        old_path = os.path.join(current_app.config["UPLOAD_FOLDER"], os.path.basename(item.image_path))
-        if os.path.exists(old_path):
-            os.remove(old_path)
-        item.image_path = ""
-        db.session.commit()
-        flash("画像を削除しました", "success")
+    item.image_path = ""
+    item.image_data = ""
+    db.session.commit()
+    flash("画像を削除しました", "success")
     return redirect(url_for("inventory.item_edit", item_id=item.id))
 
 
 @inventory_bp.route("/items/<int:item_id>/delete", methods=["POST"])
 def item_delete(item_id):
     item = Item.query.get_or_404(item_id)
-    if item.image_path:
-        old_path = os.path.join(current_app.config["UPLOAD_FOLDER"], os.path.basename(item.image_path))
-        if os.path.exists(old_path):
-            os.remove(old_path)
     name = item.name
     db.session.delete(item)
     db.session.commit()
@@ -215,7 +216,6 @@ def area_edit(area_id):
     new_name = request.form.get("name", "").strip()
     if new_name and new_name != old_name:
         area.name = new_name
-        # Update all items with old area name
         for item in Item.query.filter_by(area=old_name).all():
             item.area = new_name
         db.session.commit()
@@ -225,7 +225,6 @@ def area_edit(area_id):
 @inventory_bp.route("/areas/<int:area_id>/delete", methods=["POST"])
 def area_delete(area_id):
     area = Area.query.get_or_404(area_id)
-    # Clear area from items
     for item in Item.query.filter_by(area=area.name).all():
         item.area = ""
     db.session.delete(area)

@@ -56,6 +56,7 @@ class Item(db.Model):
     unit = db.Column(db.String(50), default="個")
     area = db.Column(db.String(100), default="")
     image_path = db.Column(db.String(300), default="")
+    image_data = db.Column(db.Text, default="")  # base64 encoded image
     supplier = db.Column(db.String(200), default="")  # 発注先
     sort_order = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=now_jst)

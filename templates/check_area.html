@@ -30,9 +30,9 @@
         {% endif %}
         <div class="check-item-row">
             <input type="hidden" name="item_ids" value="{{ item.id }}">
-            {% if item.image_path %}
-            <span class="item-thumb-link" onclick="openImgModal('{{ url_for('static', filename=item.image_path) }}')">
-                <img src="{{ url_for('static', filename=item.image_path) }}" alt="" class="item-thumb">
+            {% if item_img_url(item) %}
+            <span class="item-thumb-link" onclick="openImgModal('{{ item_img_url(item) }}')">
+                <img src="{{ item_img_url(item) }}" alt="" class="item-thumb">
             </span>
             {% endif %}
             <div class="check-item-info">

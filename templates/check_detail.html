@@ -61,7 +61,7 @@
         <tbody>
             {% for ci in check.check_items %}
             <tr>
-                <td>{% if ci.item.image_path %}<span class="item-thumb-link" onclick="openImgModal('{{ url_for('static', filename=ci.item.image_path) }}')"><img src="{{ url_for('static', filename=ci.item.image_path) }}" alt="" class="item-thumb"></span>{% endif %}</td>
+                <td>{% if item_img_url(ci.item) %}<span class="item-thumb-link" onclick="openImgModal('{{ item_img_url(ci.item) }}')"><img src="{{ item_img_url(ci.item) }}" alt="" class="item-thumb"></span>{% endif %}</td>
                 <td><span class="badge badge-category">{{ ci.item.category }}</span></td>
                 <td>{{ ci.item.name }}</td>
                 <td class="text-center">{{ ci.system_quantity }}</td>

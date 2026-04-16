@@ -47,6 +47,15 @@ def create_app():
             response.headers["Expires"] = "0"
         return response
 
+    # Template helper: get image URL for an item
+    @app.template_global()
+    def item_img_url(item):
+        if item.image_data:
+            return url_for("inventory.item_image", item_id=item.id)
+        if item.image_path:
+            return url_for("static", filename=item.image_path)
+        return ""
+
     # Template filter for area item count
     @app.template_filter("count_items")
     def count_items_filter(area_name):
@@ -54,6 +63,7 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        _migrate_schema()
         # Seed areas if empty
         if Area.query.count() == 0:
             for idx, name in enumerate(["1F処置室", "1F診察室", "2F"]):
@@ -63,6 +73,28 @@ def create_app():
             _seed_data()
 
     return app
+
+
+def _migrate_schema():
+    """Add missing columns to existing tables (idempotent)."""
+    from sqlalchemy import text, inspect
+
+    inspector = inspect(db.engine)
+    migrations = [
+        ("items", "image_data", "TEXT"),
+        ("items", "formal_name", "VARCHAR(300) DEFAULT ''"),
+        ("stock_records", "operator", "VARCHAR(100) DEFAULT ''"),
+    ]
+    for table, column, coltype in migrations:
+        if table not in inspector.get_table_names():
+            continue
+        existing_cols = [c["name"] for c in inspector.get_columns(table)]
+        if column not in existing_cols:
+            try:
+                with db.engine.begin() as conn:
+                    conn.execute(text(f'ALTER TABLE {table} ADD COLUMN {column} {coltype}'))
+            except Exception as e:
+                print(f"Migration skip {table}.{column}: {e}")
 
 
 def _seed_data():

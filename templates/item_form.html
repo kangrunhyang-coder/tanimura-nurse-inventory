@@ -86,9 +86,9 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             画像
         </label>
-        {% if item and item.image_path %}
+        {% if item and item_img_url(item) %}
         <div class="current-image" style="display:flex; align-items:flex-end; gap:.5rem; margin-bottom:.5rem;">
-            <img src="{{ url_for('static', filename=item.image_path) }}" alt="" class="preview-img">
+            <img src="{{ item_img_url(item) }}" alt="" class="preview-img">
             <button type="button" class="btn btn-sm btn-danger" onclick="deleteImage()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 画像を削除
@@ -110,13 +110,13 @@
     </div>
 </form>
 
-{% if item and item.image_path %}
+{% if item and item_img_url(item) %}
 <form id="delete-image-form" method="post" action="{{ url_for('inventory.item_delete_image', item_id=item.id) }}"></form>
 {% endif %}
 {% endblock %}
 
 {% block scripts %}
-{% if item and item.image_path %}
+{% if item and item_img_url(item) %}
 <script>
 function deleteImage() {
     if (confirm('画像を削除しますか？')) {

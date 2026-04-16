@@ -148,8 +148,8 @@
         {% for item in order_needed %}
         <div class="dash-item-row">
             <div class="dash-item-thumb">
-                {% if item.image_path %}
-                <span class="item-thumb-link" onclick="openImgModal('{{ url_for('static', filename=item.image_path) }}')"><img src="{{ url_for('static', filename=item.image_path) }}" alt="" class="item-thumb"></span>
+                {% if item_img_url(item) %}
+                <span class="item-thumb-link" onclick="openImgModal('{{ item_img_url(item) }}')"><img src="{{ item_img_url(item) }}" alt="" class="item-thumb"></span>
                 {% else %}
                 <div class="dash-item-placeholder">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -187,8 +187,8 @@
         {% for item in low_items %}
         <div class="dash-item-row">
             <div class="dash-item-thumb">
-                {% if item.image_path %}
-                <span class="item-thumb-link" onclick="openImgModal('{{ url_for('static', filename=item.image_path) }}')"><img src="{{ url_for('static', filename=item.image_path) }}" alt="" class="item-thumb"></span>
+                {% if item_img_url(item) %}
+                <span class="item-thumb-link" onclick="openImgModal('{{ item_img_url(item) }}')"><img src="{{ item_img_url(item) }}" alt="" class="item-thumb"></span>
                 {% else %}
                 <div class="dash-item-placeholder">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
